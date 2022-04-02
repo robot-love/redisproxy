@@ -34,9 +34,14 @@ class LRUCache:
         self.ttl = ttl
 
     def get(self, key):
-        if key in self.cache and not self.is_expired(key):
-            self.update_access_time(key)
-            return self.cache[key].value
+        if key in self.cache:
+            if self.is_expired(key):
+                self.cache.pop(key)
+                self.last_accessed.pop(key)
+                return None
+            else:
+                self.update_access_time(key)
+                return self.cache[key].value
         else:
             return None
 
@@ -51,11 +56,13 @@ class LRUCache:
         self.last_accessed.update({key: datetime.now()})
 
     def evict_lru(self):
-        self.cache.pop(self.find_lru_key())
+        lru_key = self.find_lru_key()
+        self.cache.pop(lru_key)
+        self.last_accessed.pop(lru_key)
 
     def find_lru_key(self):
         # O(n)
-        return min(self.cache, key=lambda x: self.last_accessed[x].last_accessed)
+        return min(self.cache, key=lambda x: self.last_accessed[x])
 
     def is_expired(self, key):
         return self.last_accessed[key] > self.cache[key].expiry

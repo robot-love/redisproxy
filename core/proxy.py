@@ -1,32 +1,65 @@
-from .cache import LRUCache
+from core.cache import LRUCache
 
 import redis
-
-# todo: make sure redis is running
-# todo: make sure redis is configured correctly
-# todo: make sure redis is not running on the same host/port as the proxy
-# todo: pass cache and client to the proxy by dependency injection
-# todo: add circuit breaker to client calls
 
 
 class Proxy:
     """
-    A simple proxy that caches requests to a redisserver.
+    A simple proxy.
     """
     def __init__(self, client, cache):
         """
-        Initialize the Redis Proxy
+        Initialize the proxy.
 
+        :param client: The client to use for the proxy. Must support a get() method.
+        :param cache: The cache to use for the proxy. Must support a get() and add() method.
         """
         self.client = client
         self.cache = cache
-        # self.cache = LRUCache(cache_capacity, cache_expiry_time)
-        # self.redis_client = redis.Redis(host=redis_ip, port=redis_port, db=0)
 
-    def get(self, key):
+    async def get(self, key):
+        # todo: handle unavailable client
         if key in self.cache:
             return self.cache.get(key)
         else:
-            value = self.redis_client.get(key)
+            value = self.client.get(key)
             self.cache.add(key, value)
             return value
+
+
+def redis_proxy_factory(redis_host, redis_port, cache_capacity, cache_ttl):
+    """
+    Create a proxy for a Redis client.
+
+    :param redis_host: hostname or ip for the backing Redis instance
+    :param redis_port: port for the backing Redis instance
+    :param cache_capacity: maximum number of items to cache
+    :param cache_ttl: expiry time for cached items in seconds
+    :return: Proxy object with an LRU cache and a redis client connection
+    """
+    client = redis.Redis(host=redis_host, port=redis_port, db=0)
+    cache = LRUCache(capacity=cache_capacity, ttl=cache_ttl)
+    return Proxy(client, cache)
+
+
+def fake_redis_proxy_factory(cache_capacity, cache_ttl, fake_data = dict()):
+    """
+    Create a proxy for a fake Redis client.
+
+    :param cache_capacity: maximum number of items to cache
+    :param cache_ttl: expiry time for cached items in seconds
+    :return: Proxy object with an LRU cache and a fake redis client connection
+    """
+    class FakeRedisClient:
+        def __init__(self, data = dict()):
+            self.store = data
+
+        def get(self, key):
+            if key in self.store:
+                return self.store[key]
+            else:
+                return None
+
+    client = FakeRedisClient(fake_data)
+    cache = LRUCache(capacity=cache_capacity, ttl=cache_ttl)
+    return Proxy(client, cache)

@@ -1,7 +1,6 @@
-from core.proxy import Proxy
+from core.proxy import redis_proxy_factory, fake_redis_proxy_factory
 from core.cache import LRUCache
 
-import redis
 from aiohttp import web
 import yaml
 
@@ -9,26 +8,31 @@ import yaml
 # todo: add circuit breaker
 # todo: add metrics
 
+# todo: make sure redis is running
+# todo: make sure redis is configured correctly
+# todo: make sure redis is not running on the same host/port as the proxy
+# todo: pass cache and client to the proxy by dependency injection
+# todo: add circuit breaker to client calls
+
+routes = web.RouteTableDef()
+
+
 def load_config(config_file):
     # todo: validate config
     with open(config_file) as f:
         return yaml.load(f)
 
 
-def redis_proxy_factory(redis_host, redis_port, cache_capacity, cache_ttl):
-    client = redis.Redis(host=redis_host, port=redis_port, db=0)
-    cache = LRUCache(capacity=cache_capacity, ttl=cache_ttl)
-    return Proxy(client, cache)
-
-
+@routes.get('/{key}')
 async def handle(request):
-    name = request.match_info.get('name', "Anonymous")
+    key = request.match_info['key']
     try:
-        result = await proxy.get(name)
+        print(f"Looking for: {key}")
+        result = await proxy.get(key)
     except ConnectionError:
         return web.Response(text="Proxy server is down", status=500)
-    except Exception:
-        return web.Response(text="Proxy server is down", status=500)
+    except Exception as e:
+        return web.Response(text=f"Unknown error: {e}", status=500)
     if not result:
         return web.Response(text="Key not found", status=404)
     return web.Response(text=result)
@@ -37,8 +41,9 @@ async def handle(request):
 if __name__ == '__main__':
     global proxy
 
-    proxy = redis_proxy_factory('localhost', 5000, 20, 10)
+    # proxy = redis_proxy_factory('localhost', 5000, 20, 10)
+    proxy = fake_redis_proxy_factory(20, 10)
     app = web.Application()
-    app.router.add_get('/', handle)
+    app.router.add_get('/{key}', handle)
 
     web.run_app(app)
