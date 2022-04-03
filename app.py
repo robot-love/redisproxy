@@ -5,13 +5,11 @@ from aiohttp import web
 import yaml
 
 # todo: add logging
-# todo: add circuit breaker
 # todo: add metrics
 
 # todo: make sure redis is running
 # todo: make sure redis is configured correctly
 # todo: make sure redis is not running on the same host/port as the proxy
-# todo: pass cache and client to the proxy by dependency injection
 # todo: add circuit breaker to client calls
 
 routes = web.RouteTableDef()
