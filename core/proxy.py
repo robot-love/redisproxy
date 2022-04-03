@@ -40,26 +40,3 @@ def redis_proxy_factory(redis_host, redis_port, cache_capacity, cache_ttl):
     client = redis.Redis(host=redis_host, port=redis_port, db=0)
     cache = LRUCache(capacity=cache_capacity, ttl=cache_ttl)
     return Proxy(client, cache)
-
-
-def fake_redis_proxy_factory(cache_capacity, cache_ttl, fake_data = dict()):
-    """
-    Create a proxy for a fake Redis client.
-
-    :param cache_capacity: maximum number of items to cache
-    :param cache_ttl: expiry time for cached items in seconds
-    :return: Proxy object with an LRU cache and a fake redis client connection
-    """
-    class FakeRedisClient:
-        def __init__(self, data = dict()):
-            self.store = data
-
-        def get(self, key):
-            if key in self.store:
-                return self.store[key]
-            else:
-                return None
-
-    client = FakeRedisClient(fake_data)
-    cache = LRUCache(capacity=cache_capacity, ttl=cache_ttl)
-    return Proxy(client, cache)

@@ -15,23 +15,25 @@ class Entry:
         self.created = created_time
         self.expiry = self.created + ttl
 
+    def __repr__(self):
+        return f"<Entry: {self.value}>"
+
 
 class LRUCache:
     """
     A simple cache with a least-recently-used eviction policy.
     """
 
-    def __init__(self, capacity: int, ttl: int):
+    def __init__(self, capacity: int, ttl: float):
         self.store = OrderedDict()
-        # self.last_accessed = dict()
 
         if capacity < 0:
             # todo: for capacity < 0, disable the capacity eviction policy
             raise ValueError("Capacity must be a non-negative integer.")
         self.capacity = capacity
 
-        if ttl < 0:
-            raise ValueError("TTL must be a non-negative integer.")
+        if ttl <= 0:
+            raise ValueError("TTL must be a positive float.")
         self.ttl = ttl
 
     def __len__(self):
@@ -82,6 +84,9 @@ class LRUCache:
         """
         if not self.evict_all_expired():
             self.evict_lru()
+
+    def get_lru_key(self):
+        return next(iter(self.store))
 
     def is_expired(self, key):
         return time() > self.store[key].expiry
