@@ -23,4 +23,4 @@ services:
     links:
       - redis
     ports:
-    - 9899:9899
+      - 9899:9899
