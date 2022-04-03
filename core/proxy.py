@@ -37,6 +37,6 @@ def redis_proxy_factory(redis_host, redis_port, cache_capacity, cache_ttl):
     :param cache_ttl: expiry time for cached items in seconds
     :return: Proxy object with an LRU cache and a redis client connection
     """
-    client = redis.Redis(host=redis_host, port=redis_port, db=0)
+    client = redis.Redis(host=redis_host, port=redis_port)
     cache = LRUCache(capacity=cache_capacity, ttl=cache_ttl)
     return Proxy(client, cache)

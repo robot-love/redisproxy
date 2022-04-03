@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+    hostname: redis-db
+    container_name: redis-instance
+    volumes:
+      - ./config/redis.conf:/redis.conf
+    command: [ "redis-server", "/redis.conf" ]
+
+  redis-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+    hostname: redis-proxy
+    container_name: redis-proxy
+    links:
+      - redis
+    ports:
+    - 9899:9899
