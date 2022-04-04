@@ -47,7 +47,7 @@ def test_lru_cache_does_not_return_expired_entries():
     assert cache.get(2) is None
     assert cache.get(3) is None
     assert cache.get(4) is None
-    assert len(cache) == 0
+    assert len(cache) == 5 # cache entries are expired, but still in cache
 
 
 def test_lru_cache_evicts_expired_entries_before_least_recently_used_entries():

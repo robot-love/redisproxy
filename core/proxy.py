@@ -1,7 +1,8 @@
 from core.cache import LRUCache
 
 import redis
-
+import aioredis
+from typing import Awaitable
 
 class Proxy:
     """
@@ -17,13 +18,14 @@ class Proxy:
         self.client = client
         self.cache = cache
 
-    async def get(self, key):
+    async def get(self, key) -> Awaitable:
         # todo: handle unavailable client
         if key in self.cache:
             return self.cache.get(key)
         else:
-            value = self.client.get(key)
-            self.cache.add(key, value)
+            value = await self.client.get(key)
+            if value:
+                self.cache.add(key, value)
             return value
 
 
@@ -38,5 +40,20 @@ def redis_proxy_factory(redis_host, redis_port, cache_capacity, cache_ttl):
     :return: Proxy object with an LRU cache and a redis client connection
     """
     client = redis.Redis(host=redis_host, port=redis_port)
+    cache = LRUCache(capacity=cache_capacity, ttl=cache_ttl)
+    return Proxy(client, cache)
+
+
+def aio_redis_proxy_factory(redis_host, redis_port, cache_capacity, cache_ttl):
+    """
+    Create an async proxy for a Redis client.
+
+    :param redis_host: hostname or ip for the backing Redis instance
+    :param redis_port: port for the backing Redis instance
+    :param cache_capacity: maximum number of items to cache
+    :param cache_ttl: expiry time for cached items in seconds
+    :return: Proxy object with an LRU cache and a redis client connection
+    """
+    client = aioredis.from_url(f"redis://{redis_host}:{redis_port}")
     cache = LRUCache(capacity=cache_capacity, ttl=cache_ttl)
     return Proxy(client, cache)

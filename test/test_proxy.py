@@ -1,3 +1,5 @@
+import pytest
+
 from core.proxy import Proxy
 
 
@@ -14,19 +16,23 @@ class FakeClient:
 
 class FakeCache:
     def __init__(self, data=dict()):
-        self.store = data
+        self._store = data
+
+    def __contains__(self, item):
+        return item in self._store
 
     def get(self, key):
-        if key in self.store:
-            return self.store[key]
+        if key in self._store:
+            return self._store[key]
         else:
             return None
 
     def add(self, key, value):
-        self.store[key] = value
+        self._store[key] = value
 
 
-def fake_redis_proxy_factory(cache_capacity, cache_ttl, fake_data = dict()):
+@pytest.fixture
+def fake_proxy():
     """
     Create a proxy for a fake Redis client.
 
@@ -34,13 +40,23 @@ def fake_redis_proxy_factory(cache_capacity, cache_ttl, fake_data = dict()):
     :param cache_ttl: expiry time for cached items in seconds
     :return: Proxy object with an LRU cache and a fake redis client connection
     """
+    fake_data = {
+        "date": "2018-01-01",
+        "time": "12:00:00",
+        "price": "1.00",
+        "currency": "USD"
+    }
 
     client = FakeClient(fake_data)
-    cache = FakeCache(capacity=cache_capacity, ttl=cache_ttl)
+    cache = FakeCache()
     return Proxy(client, cache)
 
 
-def test_proxy_get_request_is_cached():
-    pass
+@pytest.mark.asyncio
+async def test_proxy_get_request_is_cached(fake_proxy):
+    assert "date" not in fake_proxy.cache._store
+    assert "2018-01-01" == await fake_proxy.get("date")
+    assert fake_proxy.cache._store["date"] == "2018-01-01"
+
 
 

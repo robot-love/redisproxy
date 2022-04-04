@@ -2,7 +2,7 @@ help:
 	@echo Here are some helpful commands: 
 	@echo   build 		- create proxy container network and build images
 	@echo   up    		- launch proxy service
-	@echo   run   		- build + up
+	@echo   run   		- build and launch proxy service
 	@echo 	teardown 	- clean up proxy service from docker
 
 build:
@@ -27,7 +27,7 @@ test1:
 	@echo Testing key retrieval from proxy
 	@echo --------------------------------
 	@docker exec curl-proxy-test curl -s redis-proxy:9899/hello
-	@echo  \
+	@echo
 
 test-end:
 	@echo Stopping curl container
@@ -44,6 +44,8 @@ test-clean-up:
 test-only: test-setup test1 test-end test-clean-up
 	
 test: build up test-only teardown
+
+run: build up
 
 # Add known key-values to redis
 # docker exec -it redis-instance redis-cli
