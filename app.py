@@ -1,30 +1,16 @@
-import redis.exceptions
-
 from core.proxy import redis_proxy_factory
-from core.cache import LRUCache
-import traceback
-import sys
 
-import yaml
-import argparse
+import redis.exceptions
 from aiohttp import web
 from os import environ
 
 # todo: add logging
-
 # todo: make sure redis is running
 # todo: make sure redis is configured correctly
 # todo: add circuit breaker to client calls
-
 # todo: set config params as env vars
 
 routes = web.RouteTableDef()
-
-
-def load_config(config_file):
-    # todo: validate config
-    with open(config_file) as f:
-        return yaml.safe_load(f)
 
 
 @routes.get('/{key}')
@@ -51,10 +37,10 @@ def main(proxy_host, proxy_port, client_host, client_port, cache_capacity, cache
 
 if __name__ == '__main__':
     main(
-        environ['PROXY_HOST'], # cfg['proxy']['ip'],
-        int(environ['PROXY_PORT']), # cfg['proxy']['port'],
-        environ['CLIENT_HOST'], # cfg['client']['ip'],
-        int(environ['CLIENT_PORT']), # cfg['client']['port'],
-        int(environ['CACHE_CAPACITY']), # cfg['cache']['capacity'],
-        int(environ['CACHE_EXPIRY']) # cfg['cache']['expiry']
+        environ['PROXY_HOST'], 
+        int(environ['PROXY_PORT']),
+        environ['CLIENT_HOST'],
+        int(environ['CLIENT_PORT']),
+        int(environ['CACHE_CAPACITY']),
+        int(environ['CACHE_EXPIRY'])
     )

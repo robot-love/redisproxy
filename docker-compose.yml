@@ -7,6 +7,8 @@ services:
     ports:
       - 6379:6379
     hostname: redis-db
+    networks:
+      - proxy-net
     container_name: redis-instance
     volumes:
       - ./config/redis.conf:/redis.conf
@@ -20,7 +22,13 @@ services:
       - redis
     hostname: redis-proxy
     container_name: redis-proxy
+    networks:
+      - proxy-net
     links:
-      - redis
+      - redis:db
     ports:
       - 9899:9899
+
+networks:
+  proxy-net:
+    external: true

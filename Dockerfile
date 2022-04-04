@@ -12,10 +12,9 @@ ENV CACHE_CAPACITY=10
 ENV CACHE_EXPIRY=10
 
 COPY requirements.txt requirements.txt
-
 RUN pip3 install -r requirements.txt
 
-COPY . /app
 COPY /core /app/core
+COPY app.py /app/app.py
 
-CMD [ "python3", "app.py", "--config", "config.yml" ]
+CMD [ "python3", "app.py" ]
