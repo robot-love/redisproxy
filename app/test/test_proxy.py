@@ -7,7 +7,7 @@ class FakeClient:
     def __init__(self, data=dict()):
         self.store = data
 
-    def get(self, key):
+    async def get(self, key):
         if key in self.store:
             return self.store[key]
         else:
@@ -59,4 +59,9 @@ async def test_proxy_get_request_is_cached(fake_proxy):
     assert fake_proxy.cache._store["date"] == "2018-01-01"
 
 
+@pytest.mark.asyncio
+async def test_proxy_get_request_returns_cached_value(fake_proxy):
+    fake_proxy.cache.add("date", "2018-01-01")
+    fake_proxy.cache._store["date"] = "Woops!"
+    assert "Woops!" == await fake_proxy.get("date")
 

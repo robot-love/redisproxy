@@ -51,14 +51,14 @@ def test_lru_cache_does_not_return_expired_entries():
 
 
 def test_lru_cache_evicts_expired_entries_before_least_recently_used_entries():
-    cache = LRUCache(capacity=2, ttl=1)
+    cache = LRUCache(capacity=2, ttl=0.1)
     cache.add(0, 0)
-    sleep(0.6)
+    sleep(0.06)
     cache.add(1, 1)
     # make `1` the lru
     cache.get(0)
     # expire `0`
-    sleep(0.6)
+    sleep(0.06)
     assert cache.is_expired(0)
     # reach capacity
     cache.add(2, 2)
@@ -67,3 +67,26 @@ def test_lru_cache_evicts_expired_entries_before_least_recently_used_entries():
     assert cache.get(2) == 2
 
 
+def test_lru_cache_get_correct_lru_entry():
+    cache = LRUCache(capacity=4, ttl=2)
+    for i in range(4):
+        cache.add(i, i)
+    assert cache.get_lru_key() == 0
+
+
+def test_lru_cache_get_correct_lru_entry_after_eviction():
+    cache = LRUCache(capacity=4, ttl=2)
+    for i in range(4):
+        cache.add(i, i)
+    cache.add(4, 4)
+    assert cache.get(0) is None
+    assert cache.get_lru_key() == 1
+
+
+def test_lru_cache_evict_all_expired_removes_all_expired_entries():
+    cache = LRUCache(capacity=4, ttl=0.1)
+    for i in range(4):
+        cache.add(i, i)
+    sleep(0.2)
+    assert cache._evict_all_expired() is True
+    assert len(cache) == 0

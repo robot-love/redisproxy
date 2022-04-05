@@ -23,7 +23,7 @@ class Proxy:
         if key in self.cache:
             return self.cache.get(key)
         else:
-            value = self.client.get(key)
+            value = await self.client.get(key)
             if value:
                 self.cache.add(key, value)
             return value
