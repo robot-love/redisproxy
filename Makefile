@@ -6,16 +6,16 @@ help:
 	@echo 	teardown 	- clean up proxy service from docker
 
 build:
-	docker network create proxy-net
-	docker-compose build
+	@docker network create proxy-net
+	@docker-compose build
 
 up:
-	docker-compose up -d
+	@docker-compose up -d
 
 teardown:
-	docker stop redis-proxy redis-instance
-	docker rm redis-proxy redis-instance
-	docker network rm proxy-net
+	@docker stop redis-proxy redis-instance
+	@docker rm redis-proxy redis-instance
+	@docker network rm proxy-net
 
 test-setup:
 	@echo Setting up system test
