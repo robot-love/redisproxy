@@ -26,7 +26,7 @@ sys-test:
 unit-test:
 	@echo Setting up unit test
 	@echo ----------------------
-	@docker exec redis-proxy python -m pytest -vv --durations=0
+	@docker exec redis-proxy python -m pytest -v --durations=0
 
 teardown:
 	@echo Tearing down proxy service

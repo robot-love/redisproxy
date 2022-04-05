@@ -27,7 +27,7 @@ async def handle(request):
 def main(proxy_host, proxy_port, client_host, client_port, cache_capacity, cache_expiry):
     global proxy
 
-    proxy = redis_proxy_factory(client_host, client_port, cache_capacity, cache_expiry)
+    proxy = aio_redis_proxy_factory(client_host, client_port, cache_capacity, cache_expiry)
     app = web.Application()
     app.router.add_get('/{key}', handle)
 
