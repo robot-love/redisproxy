@@ -14,4 +14,4 @@ RUN pip3 install -r requirements.txt
 
 COPY /system-test/test_system.py /app/test_system.py
 
-CMD [ "python3", "-m", "pytest" ,"-v" ]
+CMD [ "python3", "-m", "pytest" ,"-v", "--durations=0" ]

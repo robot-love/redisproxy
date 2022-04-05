@@ -2,6 +2,7 @@ import os
 import redis
 import pytest
 import requests
+import multiprocessing as mp
 
 
 def write_values_to_redis_db(kv_pairs):
@@ -14,6 +15,7 @@ def delete_values_from_redis_db(kv_pairs):
     r = redis.Redis(host=os.environ['CLIENT_HOST'], port=os.environ['CLIENT_PORT'])
     for key, value in kv_pairs.items():
         r.delete(key)
+
 
 @pytest.fixture(scope='module')
 def keys_not_in_db():
@@ -84,3 +86,16 @@ def test_proxy_get_request_for_keys_not_in_db_returns_404(keys_not_in_db):
     for key in keys_not_in_db:
         r = requests.get(f'http://{os.environ["PROXY_HOST"]}:{os.environ["PROXY_PORT"]}/{key}')
         assert r.status_code == 404
+
+
+def test_proxy_handles_parallel_requests_correctly(kv_pairs):
+    def get_value(key):
+        r = requests.get(f'http://{os.environ["PROXY_HOST"]}:{os.environ["PROXY_PORT"]}/{key}')
+        assert r.text == kv_pairs[key]
+
+    procs = []
+    for key in kv_pairs:
+        procs.append(mp.Process(target=get_value, args=(key,)))
+
+    [proc.start() for proc in procs]
+    [proc.join() for proc in procs]
