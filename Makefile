@@ -29,21 +29,16 @@ test1:
 	@docker exec curl-proxy-test curl -s redis-proxy:9899/hello
 	@echo
 
-test-end:
+test-teardown:
 	@echo Stopping curl container
 	@echo -----------------------
 	@docker stop curl-proxy-test
-	@echo  \
-	
-test-clean-up:
-	@echo Cleaning up test suite
-	@echo ----------------------
 	@docker rm curl-proxy-test
 	@echo  \
 
-test-only: test-setup test1 test-end test-clean-up
-	
-test: build up test-only teardown
+test-suite: test-setup test1 test-teardown
+
+test: build up test-suite teardown
 
 run: build up
 
