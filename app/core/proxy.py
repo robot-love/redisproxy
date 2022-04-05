@@ -18,12 +18,12 @@ class Proxy:
         self.client = client
         self.cache = cache
 
-    async def get(self, key) -> Awaitable:
+    async def get(self, key):
         # todo: handle unavailable client
         if key in self.cache:
             return self.cache.get(key)
         else:
-            value = await self.client.get(key)
+            value = self.client.get(key)
             if value:
                 self.cache.add(key, value)
             return value

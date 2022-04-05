@@ -12,38 +12,22 @@ build:
 up:
 	@docker-compose up -d
 
+run: build up
+
 teardown:
+	@echo Tearing down proxy service
 	@docker stop redis-proxy redis-instance
 	@docker rm redis-proxy redis-instance
 	@docker network rm proxy-net
 
-test-setup:
+test-suite:
 	@echo Setting up system test
 	@echo ----------------------
-	@docker run -d --network=proxy-net --name curl-proxy-test alpine/curl:latest tail -f /dev/null
-	@echo  \
-	
-test1:
-	@echo Testing key retrieval from proxy
-	@echo --------------------------------
-	@docker exec curl-proxy-test curl -s redis-proxy:9899/hello
-	@echo
+	@docker build -f system-test/test.Dockerfile --tag redis-proxy-test-suite .
+	@docker run --network proxy-net --name proxy-test redis-proxy-test-suite
+	@docker rm proxy-test
 
-test-teardown:
-	@echo Stopping curl container
-	@echo -----------------------
-	@docker stop curl-proxy-test
-	@docker rm curl-proxy-test
-	@echo  \
-
-test-suite: test-setup test1 test-teardown
-
-test: build up test-suite teardown
-
-run: build up
+test: run test-suite teardown
 
 # Add known key-values to redis
 # docker exec -it redis-instance redis-cli
-	
-
-	
