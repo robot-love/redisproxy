@@ -13,9 +13,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(mes
 logging.getLogger().addHandler(logging.FileHandler('aioredis_access.log'))
 
 routes = web.RouteTableDef()
-sem = asyncio.Semaphore(2)
-concurrent_tasks = 0
-concurrent_max = int(environ['CONCURRENT_MAX'])
+sem = asyncio.Semaphore(environ['CONCURRENT_MAX'])
 
 
 async def handle(request):
@@ -39,15 +37,13 @@ async def safe_handle(request):
     Seems almost hilarious to use a task counter (a global variable no less) to rate-limit the number of concurrent
     requests, instead of a semaphore.
     """
-    global concurrent_tasks
-    if concurrent_tasks >= concurrent_max:
+    if sem.locked():
         logging.debug(f"Too many concurrent tasks, rejecting request for {request.match_info['key']}")
         return web.Response(text="Too many requests", status=429)
-    concurrent_tasks += 1
-    logging.debug(f"Starting task for {request.match_info['key']}, {concurrent_tasks} tasks in progress.")
-    value = await handle(request)
-    concurrent_tasks -= 1
-    logging.debug(f"Task for {request.match_info['key']} completed, {concurrent_tasks} tasks in progress.")
+    async with sem:
+        logging.debug(f"Starting task for {request.match_info['key']}.")
+        value = await handle(request)
+    logging.debug(f"Task for {request.match_info['key']} completed.")
     return value
 
 
