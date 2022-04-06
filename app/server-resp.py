@@ -20,9 +20,10 @@ async def handle(reader: StreamReader, writer: StreamWriter):
     message = data.decode()
     addr = writer.get_extra_info('peername')
     print(f"Received {message!r} from {addr!r}")
-    print(f"Send: {message!r}")
+    reply = parse_resp_get(data).encode('utf-8')
+    print(f"Send: {reply!r}")
 
-    writer.write(data)
+    writer.write(reply)
     await writer.drain()
 
 
