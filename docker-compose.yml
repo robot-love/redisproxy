@@ -4,8 +4,6 @@ services:
 
   redis:
     image: redis:latest
-    ports:
-      - 6379:6379
     hostname: redis-db
     networks:
       - proxy-net
@@ -13,21 +11,38 @@ services:
     volumes:
       - ./config/redis.conf:/redis.conf
     command: [ "redis-server", "/redis.conf" ]
+    expose:
+      - 6379
 
-  redis-proxy:
+  redis-proxy-http:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: http.Dockerfile
     depends_on:
       - redis
-    hostname: redis-proxy
-    container_name: redis-proxy
+    hostname: redis-proxy-http
+    container_name: redis-proxy-http
     networks:
       - proxy-net
     links:
       - redis:db
     ports:
-      - 9899:9899
+      - 80:80
+
+  redis-proxy-resp:
+    build:
+      context: .
+      dockerfile: resp.Dockerfile
+    depends_on:
+      - redis
+    hostname: redis-proxy-resp
+    container_name: redis-proxy-resp
+    networks:
+      - proxy-net
+    links:
+      - redis:db
+    ports:
+      - 6379:6380
 
 networks:
   proxy-net:
