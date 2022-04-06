@@ -7,13 +7,11 @@ import asyncio
 import logging
 
 
-global concurrent_tasks
-
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
 logging.getLogger().addHandler(logging.FileHandler('aioredis_access.log'))
 
 routes = web.RouteTableDef()
-sem = asyncio.Semaphore(environ['CONCURRENT_MAX'])
+sem = asyncio.Semaphore(int(environ['CONCURRENT_MAX']))
 
 
 async def handle(request):

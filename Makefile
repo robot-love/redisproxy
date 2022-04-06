@@ -30,8 +30,8 @@ unit-test:
 
 teardown:
 	@echo Tearing down proxy service
-	@docker stop redis-proxy redis-instance
-	@docker rm redis-proxy redis-instance
+	@docker stop redis-proxy-http redis-instance
+	@docker rm redis-proxy-http redis-instance
 	@docker network rm proxy-net
 
 test: run sys-test teardown
