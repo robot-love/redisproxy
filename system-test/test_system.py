@@ -88,14 +88,22 @@ def test_proxy_get_request_for_keys_not_in_db_returns_404(keys_not_in_db):
         assert r.status_code == 404
 
 
-def test_proxy_handles_parallel_requests_correctly(kv_pairs):
-    def get_value(key):
+def test_proxy_many_parallel_requests_return_status_200_and_429(kv_pairs):
+    def get_value(key, return_list):
         r = requests.get(f'http://{os.environ["PROXY_HOST"]}:{os.environ["PROXY_PORT"]}/{key}')
-        assert r.text == kv_pairs[key]
+        return_list.append(r.status_code)
+
+    manager = mp.Manager()
+    return_list = manager.list()
 
     procs = []
-    for key in kv_pairs:
-        procs.append(mp.Process(target=get_value, args=(key,)))
+    for i in range(5):
+        for key in kv_pairs.keys():
+            p = mp.Process(target=get_value, args=(key, return_list))
+            procs.append(p)
+            p.start()
 
-    [proc.start() for proc in procs]
     [proc.join() for proc in procs]
+
+    assert 200 in return_list
+    assert 429 in return_list

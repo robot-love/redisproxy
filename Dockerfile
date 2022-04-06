@@ -10,6 +10,7 @@ ENV CLIENT_HOST="redis-db"
 ENV CLIENT_PORT=6379
 ENV CACHE_CAPACITY=10
 ENV CACHE_EXPIRY=10
+ENV CONCURRENT_MAX=2
 
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
