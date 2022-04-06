@@ -22,4 +22,6 @@ def parse_resp_get_for_key(resp):
 
 def encode_resp_get_response(value: str) -> bytes:
     sz = len(value)
+    if sz is 0:
+        sz = -1
     return f"${sz}\r\n{value}\r\n".encode('utf-8')

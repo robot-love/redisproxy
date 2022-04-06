@@ -21,7 +21,11 @@ async def handle(reader: StreamReader, writer: StreamWriter):
         key = parse_resp_get_for_key(data)
         logging.debug(f"Requested key: {key}")
         value = await proxy.get(key)
-        logging.debug(f"Value: {value}")
+        if not value:
+            value = ""
+            logging.debug(f"Value: {value}")
+        else:
+            logging.debug(f"No value found for key: {key}")
         reply = encode_resp_get_response(value)
         writer.write(reply)
     except AssertionError:
@@ -34,11 +38,10 @@ async def handle(reader: StreamReader, writer: StreamWriter):
 
 async def main():
     global proxy
-    # proxy = redis_proxy_factory(environ['REDIS_HOST'], environ['REDIS_PORT'])
-    proxy = aio_redis_proxy_factory('localhost', 6379, 10, 10)
-    srv = await start_server(handle, 'localhost', 8888)
+    proxy = aio_redis_proxy_factory(environ['CLIENT_HOST'], environ['CLIENT_PORT'], int(environ['CACHE_CAPACITY']), int(environ['CACHE_EXPIRY']))
+    srv = await start_server(handle, environ['PROXY_HOST'], environ['PROXY_PORT'])
     addrs = ', '.join(str(sock.getsockname()) for sock in srv.sockets)
-    print(f'Serving on {addrs}')
+    logging.info(f'Serving on {addrs}')
 
     async with srv:
         await srv.serve_forever()

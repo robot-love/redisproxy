@@ -28,8 +28,6 @@ services:
       - redis:db
     ports:
       - 8080:8080
-    expose:
-      - 8080
 
   redis-proxy-resp:
     build:
