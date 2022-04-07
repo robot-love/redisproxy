@@ -2,10 +2,11 @@ help:
 	@echo Here are some helpful commands: 
 	@echo		build		- create proxy container network and build images
 	@echo		up		- launch proxy service
-	@echo		run		- build and launch proxy service, leave running
-	@echo		sys-test	- run system tests
-	@echo		unit-test	- run unit tests
 	@echo		down		- shut down proxy service
+	@echo		run		- build and launch proxy service, leave running
+	@echo		test	- run system tests
+	@echo 		test-down 	- shut down test service
+	@echo		unit-test	- run unit tests in proxy containers
 
 build:
 	@echo -- Building proxy container network --
