@@ -33,6 +33,7 @@ test:
 	@echo -- Tests Complete, Tearing Down Test System --
 	@docker-compose down
 	@docker rm proxy-test
+	@docker network rm proxy-net
 
 test-down:
 	@docker rm proxy-test
