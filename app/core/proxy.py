@@ -2,7 +2,7 @@ from core.cache import LRUCache
 
 import redis
 import aioredis
-from typing import Awaitable
+
 
 class Proxy:
     """
