@@ -7,13 +7,11 @@ import asyncio
 import logging
 
 
-global concurrent_tasks
-
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
 logging.getLogger().addHandler(logging.FileHandler('aioredis_access.log'))
 
 routes = web.RouteTableDef()
-sem = asyncio.Semaphore(environ['CONCURRENT_MAX'])
+sem = asyncio.Semaphore(int(environ['CONCURRENT_MAX']))
 
 
 async def handle(request):
@@ -26,7 +24,7 @@ async def handle(request):
         return web.Response(text=f"Unknown error : {e}", status=500)
     if not result:
         return web.Response(text="Key not found", status=404)
-    return web.Response(text=result.decode('utf-8'))
+    return web.Response(text=result)
 
 
 @routes.get('/{key}')

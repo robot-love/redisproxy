@@ -3,38 +3,35 @@ help:
 	@echo		build		- create proxy container network and build images
 	@echo		up		- launch proxy service
 	@echo		run		- build and launch proxy service, leave running (build + up)
-	@echo		system-test	- run system tests
+	@echo		sys-test	- run system tests
 	@echo		unit-test	- run unit tests
-	@echo		teardown	- shut down proxy service
+	@echo		down		- shut down proxy service
 
 build:
-	@docker network create proxy-net
-	@docker-compose build
+	@echo -- Building proxy container network --
+	@docker-compose build -q
 
 up:
+	@echo -- Starting proxy service --
 	@docker-compose up -d
+
+down:
+	@echo -- Tearing down proxy service --
+	@docker-compose down
 
 run: build up
 
-sys-test:
-	@echo Setting up system test
-	@echo ----------------------
-	@docker build -f system-test/test.Dockerfile --tag redis-proxy-test-suite .
+test:
+	@echo -- Runnign system tests --
+	@docker network create proxy-net
+	@docker-compose -f docker-compose.sys-test.yml build -q
+	@docker-compose -f docker-compose.sys-test.yml up -d
+	@docker build -f test.Dockerfile --tag redis-proxy-test-suite . -q
 	@docker run --network proxy-net --name proxy-test redis-proxy-test-suite
+	@docker-compose down
 	@docker rm proxy-test
 
 unit-test:
-	@echo Setting up unit test
-	@echo ----------------------
-	@docker exec redis-proxy python -m pytest -v --durations=0
-
-teardown:
-	@echo Tearing down proxy service
-	@docker stop redis-proxy redis-instance
-	@docker rm redis-proxy redis-instance
-	@docker network rm proxy-net
-
-test: run sys-test teardown
-
-# Add known key-values to redis
-# docker exec -it redis-instance redis-cli
+	@echo -- Running unit tests --
+	@docker exec redis-proxy-http python -m pytest -v --durations=0
+	@docker exec redis-proxy-resp python -m pytest -v --durations=0

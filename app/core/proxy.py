@@ -25,6 +25,7 @@ class Proxy:
         else:
             value = await self.client.get(key)
             if value:
+                value = value.decode('utf-8')
                 self.cache.add(key, value)
             return value
 
