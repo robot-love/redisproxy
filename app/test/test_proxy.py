@@ -9,7 +9,7 @@ class FakeClient:
 
     async def get(self, key):
         if key in self.store:
-            return self.store[key]
+            return self.store[key].encode('utf-8')
         else:
             return None
 

@@ -11,8 +11,8 @@ services:
     volumes:
       - ./config/redis.conf:/redis.conf
     command: [ "redis-server", "/redis.conf" ]
-    expose:
-      - 6379
+    ports:
+      - 6379:6379
 
   redis-proxy-http:
     environment:
@@ -58,9 +58,10 @@ services:
     links:
       - redis:db
     ports:
-      - 6379:6380
+      - 6380:6380
+
 
 networks:
   proxy-net:
-    external: false
+    external: true
     name: proxy-net

@@ -24,7 +24,7 @@ async def handle(request):
         return web.Response(text=f"Unknown error : {e}", status=500)
     if not result:
         return web.Response(text="Key not found", status=404)
-    return web.Response(text=result.decode('utf-8'))
+    return web.Response(text=result)
 
 
 @routes.get('/{key}')

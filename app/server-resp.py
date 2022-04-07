@@ -2,12 +2,13 @@ from core.proxy import aio_redis_proxy_factory
 from core.parser import parse_resp_get_for_key, encode_resp_get_response
 
 import logging
-from asyncio import run
+from asyncio import run, Semaphore
 from asyncio.streams import start_server, StreamReader, StreamWriter
 from os import environ
 
 
 logging.basicConfig(level=logging.DEBUG)
+sem = Semaphore(int(environ['CONCURRENT_MAX']))
 
 
 async def handle(reader: StreamReader, writer: StreamWriter):
@@ -30,10 +31,17 @@ async def handle(reader: StreamReader, writer: StreamWriter):
         writer.write(reply)
     except AssertionError:
         logging.debug("Not a GET request")
-        writer.write(b'-ERR: malformed GET request.\r\n')
+        writer.write(b'-ERR: command not supported.\r\n')
     finally:
         await writer.drain()
         writer.close()
+
+
+async def safe_handle(reader: StreamReader, writer: StreamWriter):
+    if sem.locked():
+        writer.write(b'-ERR: Too many requests.\r\n')
+    async with sem:
+        await handle(reader, writer)
 
 
 async def main():
