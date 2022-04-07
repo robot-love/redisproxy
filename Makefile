@@ -24,8 +24,9 @@ run: build up
 test:
 	@echo -- Runnign system tests --
 	@docker network create proxy-net
+	@docker-compose -f docker-compose.sys-test.yml build -q
 	@docker-compose -f docker-compose.sys-test.yml up -d
-	@docker build -f test.Dockerfile --tag redis-proxy-test-suite .
+	@docker build -f test.Dockerfile --tag redis-proxy-test-suite . -q
 	@docker run --network proxy-net --name proxy-test redis-proxy-test-suite
 	@docker-compose down
 	@docker rm proxy-test
@@ -34,9 +35,3 @@ unit-test:
 	@echo -- Running unit tests --
 	@docker exec redis-proxy-http python -m pytest -v --durations=0
 	@docker exec redis-proxy-resp python -m pytest -v --durations=0
-
-
-#test:
-#	@docker-compose -f docker-compose.yml -f docker-compose.sys-test.yml build
-#	@docker-compose -f docker-compose.yml -f docker-compose.sys-test.yml up
-#	@docker-compose -f docker-compose.yml -f docker-compose.sys-test.yml down

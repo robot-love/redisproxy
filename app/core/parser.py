@@ -13,9 +13,7 @@ def parse_resp_get_for_key(resp):
     :return:
     """
     resp = resp.decode('utf-8')
-    logging.debug(f"Parsing {resp}")
     resp = resp.split('\r\n')
-    logging.debug(f"Split {resp}")
     assert resp[:3] == ["*2", "$3", "GET"]
     return resp[-2]
 
@@ -23,5 +21,5 @@ def parse_resp_get_for_key(resp):
 def encode_resp_get_response(value: str) -> bytes:
     sz = len(value)
     if sz == 0:
-        sz = -1
+        return f"${-1}\r\n".encode('utf-8')
     return f"${sz}\r\n{value}\r\n".encode('utf-8')

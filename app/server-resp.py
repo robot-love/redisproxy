@@ -13,21 +13,21 @@ sem = Semaphore(int(environ['CONCURRENT_MAX']))
 
 async def handle(reader: StreamReader, writer: StreamWriter):
     data = await reader.read(2048)
-    logging.info(f'New connection: {data}')
     global proxy
     message = data.decode()
     addr = writer.get_extra_info('peername')
-    logging.debug(f"Received {message!r} from {addr!r}")
+    logging.info(f"Received message '{message}' from {addr!r}")
     try:
         key = parse_resp_get_for_key(data)
         logging.debug(f"Requested key: {key}")
         value = await proxy.get(key)
         if not value:
             value = ""
-            logging.debug(f"Value: {value}")
-        else:
             logging.debug(f"No value found for key: {key}")
+        else:
+            logging.debug(f"Found {key}: {value}")
         reply = encode_resp_get_response(value)
+        logging.debug(f"Sending reply: {reply}")
         writer.write(reply)
     except AssertionError:
         logging.debug("Not a GET request")
@@ -39,6 +39,7 @@ async def handle(reader: StreamReader, writer: StreamWriter):
 
 async def safe_handle(reader: StreamReader, writer: StreamWriter):
     if sem.locked():
+        logging.warning("Server is busy, rejecting connection!")
         writer.write(b'-ERR: Too many requests.\r\n')
     async with sem:
         await handle(reader, writer)

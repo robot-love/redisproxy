@@ -14,6 +14,7 @@ ENV CLIENT_PORT=6379
 COPY system-test/requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
-COPY /system-test/test_http_proxy_service.py /app/test_system.py
+COPY /system-test/test_http_proxy_service.py /app/test_http_proxy_service.py
+COPY /system-test/test_resp_proxy_service.py /app/test_resp_proxy_service.py
 
-CMD [ "python3", "-m", "pytest" ,"-v", "--durations=0" ]
+CMD [ "python3", "-m", "pytest" ]
